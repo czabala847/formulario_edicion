@@ -1,0 +1,2 @@
+# formulario_edicion
+Requerimiento REQ1-HMCV002 DE FORMULARIO PARA EDICIÓN DE DETALLE DEL PEDIDO
