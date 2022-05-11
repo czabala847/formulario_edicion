@@ -53,6 +53,7 @@ const handleSubmit = (e) => {
     ${msg}
     `;
   } else {
+    $responseContainer.classList.replace("d-none", "d-block");
     $responseContainer.classList.replace("alert-danger", "alert-success");
     $responseContainer.textContent = msg;
   }
