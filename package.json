@@ -1,0 +1,16 @@
+{
+  "name": "req1-hmcv002",
+  "version": "1.0.0",
+  "description": "Formulario para edición de detalle del pedido - Modulo de home",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "crm",
+    "home",
+    "tecnomovil"
+  ],
+  "author": "czabala847@gmail.com",
+  "license": "ISC"
+}
