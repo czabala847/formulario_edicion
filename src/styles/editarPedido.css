@@ -34,4 +34,8 @@
     #main > .container{
         padding: 2rem;
     }
+
+    .Form__Radio{
+        grid-template-columns: 1fr;
+    }
 }
