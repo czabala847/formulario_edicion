@@ -3,6 +3,17 @@ import { minDateInput, validateInputs } from "./helpers/Validations.js";
 const $form = document.querySelector("#form-edit");
 const $registerDate = document.querySelector("#txtRegistrationDate");
 const $instalationDate = document.querySelector("#txtInstalationDate");
+const $checkboxes = document.querySelectorAll(".Form__Checkbox");
+
+const handleChange = (e) => {
+  const $containerParent = e.target.parentElement.parentElement;
+
+  if ($containerParent) {
+    const $containerRadio = $containerParent.querySelector(".Form__Radio");
+
+    $containerRadio.classList.toggle("d-none");
+  }
+};
 
 const handleSubmit = (e) => {
   e.preventDefault();
@@ -23,9 +34,17 @@ const handleSubmit = (e) => {
   }
 };
 
+/**
+ * Inicio de la app
+ */
 const init = () => {
-  minDateInput($registerDate);
+  minDateInput($registerDate); //Restringir fechas en el calendario del formulario
   minDateInput($instalationDate);
+
+  //Añadir evento cuando se cambia algún checkbox del formulario.
+  [...$checkboxes].map((checkbox) => {
+    checkbox.addEventListener("change", handleChange);
+  });
 
   $form.addEventListener("submit", handleSubmit);
 };

@@ -1,22 +1,31 @@
-const rules = {
-  fecha_ingreso: { type: "date", max: "today", required: true },
-  fecha_instalacion: { type: "date", max: "today", required: true },
-  barrio: { type: "string", min: 5, max: 50, required: true },
-  estrato: { type: "numeric", min: 1, max: 10, required: true },
-  direccion: { type: "string", min: 8, max: 50, required: true },
-  cliente_id: {
+const rules = [
+  { name: "fecha_ingreso", type: "date", max: "today", required: true },
+  { name: "fecha_instalacion", type: "date", max: "today", required: true },
+  { name: "prod_gral[]", type: "string", required: true, alias: "producto" },
+  { name: "barrio", type: "string", min: 5, max: 50, required: true },
+  { name: "estrato", type: "numeric", min: 1, max: 10, required: true },
+  { name: "direccion", type: "string", min: 8, max: 50, required: true },
+  {
+    name: "cliente_id",
     type: "numeric",
     min: 1,
     max: 999999999999999,
     required: false,
     nit: true,
+    alias: "cédula",
   },
-  nombre_cliente: { type: "string", min: 8, max: 50, required: true },
-  canal_id: { type: "numeric", min: 100, max: 99999999, required: true },
-  regional: { type: "string", required: true },
-  est_departamento: { type: "string", required: true },
-  tecnologia: { type: "string", required: true },
-};
+  { name: "nombre_cliente", type: "string", min: 8, max: 50, required: true },
+  {
+    name: "canal_id",
+    type: "numeric",
+    min: 100,
+    max: 99999999,
+    required: true,
+  },
+  { name: "regional", type: "string", required: true },
+  { name: "est_departamento", type: "string", required: true },
+  { name: "tecnologia", type: "string", required: true },
+];
 
 /**
  * Restringe en el calendario del formulario que se selecciones fechas mayor al día actual.
@@ -24,7 +33,6 @@ const rules = {
  * @returns {string} Si el input no es valido.
  */
 export const minDateInput = (input) => {
-  debugger;
   if (!input) return "Campo no valido";
   input.max = new Date().toLocaleString("sv").split(" ")[0];
 };
@@ -46,11 +54,11 @@ const validateNumber = (number, min = 1, max = 99999999, nit = false) => {
   if (nit === true && regex.test(number) === false) {
     return {
       error: true,
-      msg: "El campo solo admite valores numéricos y el guion medio (-).",
+      msg: "El campo solo admite valores numéricos y el guion medio (-) en caso de un NIT.",
     };
   }
 
-  number = parseInt(number.replaceAll("-", ""));
+  number = parseInt(number);
   if (number >= min && number <= max) {
     error = false;
     msg = "Validación exitosa";
@@ -105,30 +113,32 @@ const validateDate = (dateValue) => {
  * @returns {array}
  */
 export const validateInputs = (formData) => {
-  for (const input of formData.entries()) {
-    const rule = rules[input[0]];
+  for (const rule of rules) {
+    const value = formData.get(rule.name);
+    const nameField = rule.alias ? rule.alias : rule.name;
 
-    if (rule?.required === true && !input[1]) {
+    if (rule.required === true && !value) {
       return {
         error: true,
-        msg: `El campo ${input[0]} es requerido`,
-        field: input[0],
+        msg: `El campo ${nameField} es obligatorio`,
+        field: nameField,
       };
     }
 
     let result = "";
-    switch (rule?.type) {
+    switch (rule.type) {
       case "date":
-        result = validateDate(input[1]);
+        result = validateDate(value);
         break;
       case "string":
-        result = validateString(input[1], rule?.min, rule?.max);
+        result = validateString(value, rule?.min, rule?.max);
         break;
       case "numeric":
-        result = validateNumber(input[1], rule?.min, rule?.max, rule?.nit);
+        result = validateNumber(value, rule?.min, rule?.max, rule?.nit);
         break;
     }
-    if (result.error) return { ...result, field: input[0] };
+
+    if (result.error) return { ...result, field: nameField };
   }
 
   return { error: false, msg: "Todos los campos cumplen con las reglas." };
