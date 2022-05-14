@@ -1,10 +1,59 @@
 const $form = document.querySelector("#form-edit");
+const $checkboxes = document.querySelectorAll(".Form__Checkbox");
+let rulesProductChecked = [];
+
+const handleChange = (e) => {
+  const checkbox = e.target;
+  const $containerParent = checkbox.parentElement.parentElement;
+
+  //Mostrar los radioButton de la categoría seleccionada.
+  if ($containerParent) {
+    const $containerRadio = $containerParent.querySelector(".Form__Radio");
+    $containerRadio.classList.toggle("d-none");
+
+    if (checkbox.checked) {
+      const newRule = {
+        name: checkbox.dataset.nameRadio,
+        alias: `Producto ${checkbox.dataset.category}`,
+        value: undefined, //no se sabe aún que radio se seleccionó
+        rules: ["notEmpty"],
+      };
+
+      // Cuando se seleccione una categoría añadir a la regla de validación que sus radioButton son
+      // obligatorios.
+      rulesProductChecked.push(newRule);
+    } else {
+      //   Deseleccionar los radios activos.
+      const $radios = $containerRadio.querySelectorAll("input[type='radio']");
+      [...$radios].forEach((radio) => {
+        radio.checked = false;
+      });
+
+      //Eliminar la regla si existe.
+      rulesProductChecked = rulesProductChecked.filter(
+        (rule) => rule.name !== checkbox.dataset.nameRadio
+      );
+    }
+  }
+};
 
 const handleSubmit = (e) => {
   e.preventDefault();
 
   const fd = new FormData($form);
-  const frmDataReg = getDataRules(fd);
+  let frmDataReg = getDataRules(fd);
+
+  if (rulesProductChecked.length > 0) {
+    //actualizar el valor de las nuevas reglas.
+    rulesProductChecked = rulesProductChecked.map((rule) => {
+      return { ...rule, value: fd.get(rule.name) };
+    });
+  }
+
+  frmDataReg = [...frmDataReg, ...rulesProductChecked];
+
+  debugger;
+
   const { success, msg } = validateDataFrm(frmDataReg);
   const $responseContainer = document.querySelector("#responseValidate");
 
@@ -36,6 +85,12 @@ const getDataRules = (formData) => {
         alias: "Fecha de Instalación",
         value: formData.get("fecha_instalacion"),
         rules: ["notEmpty", "dateNoLater"],
+      },
+      {
+        name: "prod_gral[]",
+        alias: "Producto",
+        value: formData.get("prod_gral[]"),
+        rules: ["notEmpty"],
       },
       {
         name: "barrio",
@@ -99,6 +154,11 @@ const getDataRules = (formData) => {
  * Inicio de la app
  */
 const init = () => {
+  //Añadir evento cuando se cambia algún checkbox del formulario.
+  [...$checkboxes].map((checkbox) => {
+    checkbox.addEventListener("change", handleChange);
+  });
+
   $form.addEventListener("submit", handleSubmit);
 };
 

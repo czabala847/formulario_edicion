@@ -69,7 +69,10 @@ var validateDataFrm = function (data) {
       var ruleName = ruleConfig[0];
       switch (ruleName) {
         case "notEmpty":
-          if (value.length === 0) {
+          if (value === null) {
+            success = false;
+            msg = `El campo ${alias} es obligatorio.`;
+          } else if (value.length === 0) {
             success = false;
             msg = `El campo ${alias} está vacío.`;
           }
