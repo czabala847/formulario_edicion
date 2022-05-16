@@ -62,6 +62,7 @@ var validateDataFrm = function (data) {
     var Rules = Item.rules;
     var value = Item.value;
     var alias = Item.alias;
+    var customMsg = Item.customMsg;
     var acceptEmptyValue =
       $.inArray("acceptEmptyValue", Rules) >= 0 && value.length === 0;
     $.each(Rules, function (j, Rule) {
@@ -71,7 +72,7 @@ var validateDataFrm = function (data) {
         case "notEmpty":
           if (value === null) {
             success = false;
-            msg = `El campo ${alias} es obligatorio.`;
+            msg = customMsg ? customMsg : `El campo ${alias} es obligatorio.`;
           } else if (value.length === 0) {
             success = false;
             msg = `El campo ${alias} está vacío.`;

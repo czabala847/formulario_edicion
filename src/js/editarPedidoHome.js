@@ -16,6 +16,7 @@ const handleChange = (e) => {
         name: checkbox.dataset.nameRadio,
         alias: `Producto ${checkbox.dataset.category}`,
         value: undefined, //no se sabe aún que radio se seleccionó
+        customMsg: `Debe seleccionar un producto para la categoría ${checkbox.dataset.category}`,
         rules: ["notEmpty"],
       };
 
@@ -41,20 +42,26 @@ const handleSubmit = (e) => {
   e.preventDefault();
 
   const fd = new FormData($form);
-  let frmDataReg = getDataRules(fd);
+  const frmDataReg = getDataRules(fd);
+  let rules = [];
 
   if (rulesProductChecked.length > 0) {
     //actualizar el valor de las nuevas reglas.
     rulesProductChecked = rulesProductChecked.map((rule) => {
       return { ...rule, value: fd.get(rule.name) };
     });
+
+    //añadir las nuevas reglas después del campo producto.
+    const index = frmDataReg.findIndex((rule) => rule.name === "prod_gral[]");
+    rules = frmDataReg
+      .splice(0, index + 1)
+      .concat(rulesProductChecked)
+      .concat(frmDataReg);
+    // frmDataReg = [...frmDataReg, ...rulesProductChecked];
   }
 
-  frmDataReg = [...frmDataReg, ...rulesProductChecked];
-
-  debugger;
-
-  const { success, msg } = validateDataFrm(frmDataReg);
+  rules = rules.length > 0 ? rules : frmDataReg;
+  const { success, msg } = validateDataFrm(rules);
   const $responseContainer = document.querySelector("#responseValidate");
 
   if (!success) {
