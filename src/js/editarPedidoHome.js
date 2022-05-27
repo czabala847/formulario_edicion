@@ -61,7 +61,7 @@ const handleSubmit = (e) => {
   }
 
   rules = rules.length > 0 ? rules : frmDataReg;
-  const { success, msg } = validateDataFrm(rules);
+  const { success, msg, data = [] } = validateDataFrm(rules);
   const $responseContainer = document.querySelector("#responseValidate");
 
   if (!success) {
@@ -73,6 +73,7 @@ const handleSubmit = (e) => {
     $responseContainer.classList.replace("alert-danger", "alert-success");
     $responseContainer.textContent =
       "Todos los campos cumplen con la condición.";
+    console.log(data);
   }
 
   $responseContainer.scrollIntoView(false);
@@ -85,7 +86,7 @@ const getDataRules = (formData) => {
         name: "fecha_ingreso",
         alias: "Fecha de Ingreso",
         value: formData.get("fecha_ingreso"),
-        rules: ["notEmpty", "dateNoLater"],
+        rules: ["notEmpty", "minDate:2022-05-01", "maxDate:2022-05-31"],
       },
       {
         name: "fecha_instalacion",
@@ -115,7 +116,7 @@ const getDataRules = (formData) => {
         name: "direccion",
         alias: "Dirección del cliente",
         value: formData.get("direccion"),
-        rules: ["notEmpty", "minLength:8", "maxLength:50"],
+        rules: ["notEmpty", "minLength:8", "maxLength:50", "depend:estrato:1"],
       },
       {
         name: "cliente_id",

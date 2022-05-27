@@ -54,7 +54,27 @@ var GetTemplate = function (url, data, ctn, fnf = null) {
     });
 };
 
+const stringToDate = (dateStr) => {
+  const regEdx = /^\d{4}-\d{2}-\d{2}$/;
+
+  if (regEdx.test(dateStr)) {
+    const [year, month, day] = dateStr.split("-");
+    const date = new Date(year, month - 1, day);
+
+    return {
+      success: true,
+      date,
+    };
+  }
+
+  return {
+    success: false,
+    msg: "La fecha no cumple con el formato YYYY-MM-DD.",
+  };
+};
+
 var validateDataFrm = function (data) {
+  let arrayData = [];
   var success = true;
   var msg = "";
   $.each(data, function (index, Item) {
@@ -68,6 +88,7 @@ var validateDataFrm = function (data) {
     $.each(Rules, function (j, Rule) {
       var ruleConfig = Rule.split(":");
       var ruleName = ruleConfig[0];
+
       switch (ruleName) {
         case "notEmpty":
           if (value === null) {
@@ -77,6 +98,11 @@ var validateDataFrm = function (data) {
             success = false;
             msg = `El campo ${alias} está vacío.`;
           }
+
+          if (!$.isNumeric(value)) {
+            value = value.replace("\t", "").trim();
+          }
+
           break;
         case "number":
           if (!acceptEmptyValue) {
@@ -158,7 +184,7 @@ var validateDataFrm = function (data) {
               success = false;
               msg = `El campo ${alias} deben tener solo números.`;
             } else {
-              if (value < ruleConfig[1]) {
+              if (Number(value) < Number(ruleConfig[1])) {
                 success = false;
                 msg = `El valor de ${alias} debe ser mayor o igual a ${ruleConfig[1]}.`;
               }
@@ -173,7 +199,7 @@ var validateDataFrm = function (data) {
               success = false;
               msg = `El campo ${alias} deben tener solo números.`;
             } else {
-              if (value > ruleConfig[1]) {
+              if (Number(value) > Number(ruleConfig[1])) {
                 success = false;
                 msg = `El valor de ${alias} debe ser menor o igual a ${ruleConfig[1]}.`;
               }
@@ -191,6 +217,60 @@ var validateDataFrm = function (data) {
             }
           }
           break;
+
+        case "depend":
+          if (!acceptEmptyValue) {
+            var fieldCompName = ruleConfig[1];
+            var fieldCompValue = ruleConfig[2];
+            var fieldComp = data.find(function (El) {
+              return El.name === fieldCompName;
+            });
+
+            if (fieldComp) {
+              var valComp = fieldComp.value;
+              if (valComp != fieldCompValue) {
+                success = false;
+                msg = `El campo ${alias} require que el valor de ${fieldComp.alias} sea ${fieldCompValue}.`;
+              }
+            } else {
+              success = false;
+              msg = `El campo ${fieldCompName} que se tomará como comparación, no existe.`;
+            }
+          }
+          break;
+
+        case "minDate":
+          if (!acceptEmptyValue) {
+            const date = stringToDate(value);
+            const minDate = stringToDate(ruleConfig[1]);
+
+            if (date.success && minDate.success) {
+              if (minDate.date > date.date) {
+                success = false;
+                msg = `La fecha del campo ${alias} debe ser mayor o igual a ${ruleConfig[1]}.`;
+              }
+            } else {
+              success = false;
+              msg = `${date?.msg}. ${minDate?.msg}`;
+            }
+          }
+          break;
+        case "maxDate":
+          if (!acceptEmptyValue) {
+            const date = stringToDate(value);
+            const maxDate = stringToDate(ruleConfig[1]);
+
+            if (date.success && maxDate.success) {
+              if (maxDate.date < date.date) {
+                success = false;
+                msg = `La fecha del campo ${alias} debe ser menor o igual a ${ruleConfig[1]}.`;
+              }
+            } else {
+              success = false;
+              msg = `${date?.msg}. ${maxDate?.msg}`;
+            }
+          }
+          break;
         default:
         // console.log('Regla no creada');
       }
@@ -201,11 +281,14 @@ var validateDataFrm = function (data) {
     if (!success) {
       return false;
     }
+
+    arrayData.push([name, value]);
   });
 
   return {
     success: success,
     msg: msg,
+    data: arrayData,
   };
 };
 
